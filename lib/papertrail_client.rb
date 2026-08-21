@@ -20,12 +20,22 @@ class PapertrailClient
   end
 
   def download_archive(download_url)
-    uri = URI(download_url)
-    response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
-      http.request(Net::HTTP::Get.new(uri))
+    attempts = 0
+    begin
+      uri = URI(download_url)
+      response = Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+        http.request(Net::HTTP::Get.new(uri))
+      end
+      handle_errors(response)
+      response.body
+    rescue Errno::ECONNRESET, OpenSSL::SSL::SSLError, Net::OpenTimeout, Net::ReadTimeout, EOFError => e
+      attempts += 1
+      raise if attempts > 3
+
+      warn "  Network error (#{e.class}). Retrying in #{attempts * 2}s..."
+      sleep(attempts * 2)
+      retry
     end
-    handle_errors(response)
-    response.body
   end
 
   private
