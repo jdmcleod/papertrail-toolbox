@@ -12,7 +12,7 @@ require_relative "html_report"
 request_ids = ARGV
 abort "Usage: bundle exec ruby tools/request_logs/script.rb <request_id> [request_id ...]" if request_ids.empty?
 
-cache = EventCache.new(File.join(root, "log_cache"))
+cache = EventCache.for_app(root)
 puts "Loading cached logs..."
 events = cache.read_all
 puts "Total events loaded: #{events.length}"

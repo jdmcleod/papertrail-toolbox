@@ -8,9 +8,9 @@ class EventFetcher
     @cache = cache
   end
 
-  def fetch(start_time:, end_time: Time.now)
-    download_archives(start_time: start_time, end_time: end_time)
-    @cache.read_all
+  def fetch(window)
+    archives = download_archives(start_time: window.start_time, end_time: window.end_time)
+    @cache.read(archives.map { |a| a["name"] })
   end
 
   private
@@ -30,5 +30,7 @@ class EventFetcher
       retry if e.message == "rate_limited"
       raise
     end
+
+    archives
   end
 end
