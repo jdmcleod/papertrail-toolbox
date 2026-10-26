@@ -14,10 +14,11 @@ Create a `.env` file in the project root with the required credentials:
 
 ```
 PAPERTRAIL_API_TOKEN=your_token_here
+APP_NAME=C12
 TARGET_USER_ID=229
-START_DATE=2026-05-18
-END_DATE=2026-06-05
 ```
+
+`APP_NAME` picks which app's cache to use. Each app gets its own folder under `log_cache/`, so one checkout can serve several projects.
 
 Generate the Solarwinds Papertrail token within the Solarwinds "Settings => API Tokens" tab.
 
@@ -25,9 +26,19 @@ Generate the Solarwinds Papertrail token within the Solarwinds "Settings => API 
 
 ### Log fetching and caching
 
-The shared library (`lib/`) handles downloading and caching Papertrail log archives. Archives are fetched once and stored as gzipped JSONL files in `log_cache/`. On subsequent runs, only new archives are downloaded — cached files are skipped automatically. This makes repeated analysis fast and avoids redundant API calls.
+The shared library (`lib/`) handles downloading and caching Papertrail log archives. Archives are fetched once and stored as gzipped JSONL files in `log_cache/<APP_NAME>/`. On subsequent runs, only new archives are downloaded — cached files are skipped automatically. This makes repeated analysis fast and avoids redundant API calls.
 
-The `log_cache/` directory is created automatically on first run.
+The app's cache folder is created on first run.
+
+### Time window
+
+Tools that fetch logs take the window as options. With none, they fetch the last 24 hours.
+
+| Option | Meaning |
+|---|---|
+| `--from TIME` | Start of the window (e.g. `2026-05-18` or `2026-05-18T14:00`) |
+| `--to TIME` | End of the window (default: now) |
+| `--hours N` | Window length when `--from` is left out (default: 24) |
 
 ### Shared library (`lib/`)
 
@@ -35,7 +46,8 @@ The `log_cache/` directory is created automatically on first run.
 |---|---|
 | `papertrail_client.rb` | Papertrail API client (archive listing, downloading, rate-limit handling) |
 | `event_cache.rb` | Local gzip cache for downloaded log archives |
-| `event_fetcher.rb` | Orchestrates fetching and caching of archives |
+| `event_fetcher.rb` | Fetches and caches the archives in a time window |
+| `time_window.rb` | Parses `--from`, `--to` and `--hours` options |
 
 ## Tools
 
@@ -46,7 +58,7 @@ Each tool lives in its own directory under `tools/` with a `script.rb` entry poi
 Searches all cached logs for activity by a specific user, correlates app-level events with Heroku router logs to determine client IP addresses, and prints a timeline of requests.
 
 ```sh
-bundle exec ruby tools/search_user/script.rb
+bundle exec ruby tools/search_user/script.rb --from 2026-05-18 --to 2026-06-05
 ```
 
 Output includes:

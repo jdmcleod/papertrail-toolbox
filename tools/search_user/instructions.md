@@ -14,27 +14,27 @@ Set the following in the `.env` file at the project root:
 
 ```
 PAPERTRAIL_API_TOKEN=your_token_here
+APP_NAME=C12
 TARGET_USER_ID=229
-START_DATE=2026-05-18
-END_DATE=2026-06-05
 ```
 
 | Variable | Description |
 |---|---|
 | `PAPERTRAIL_API_TOKEN` | SolarWinds API token (Settings > API Tokens) |
+| `APP_NAME` | Selects the cache folder under `log_cache/` |
 | `TARGET_USER_ID` | The user ID to search for in logs |
-| `START_DATE` | Beginning of the search window (YYYY-MM-DD) |
-| `END_DATE` | End of the search window (YYYY-MM-DD) |
 
 ## Running
 
 From the project root:
 
 ```sh
-bundle exec ruby tools/search_user/script.rb
+bundle exec ruby tools/search_user/script.rb --from 2026-05-18 --to 2026-06-05
 ```
 
-On the first run, all log archives in the date range are downloaded and cached to `log_cache/`. Subsequent runs skip already-cached archives, so re-runs are fast.
+Leave out `--from` and `--to` to search the last 24 hours. `--hours N` sets a different length.
+
+On the first run, all log archives in the date range are downloaded and cached to `log_cache/<APP_NAME>/`. Subsequent runs skip already-cached archives, so re-runs are fast.
 
 ## Output
 
