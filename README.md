@@ -67,6 +67,23 @@ Output includes:
 - Warning if multiple distinct IPs are detected
 - Full request timeline with timestamps, IPs, and request details
 
+### memory_pressure
+
+Reads Heroku's dyno memory samples and R14 warnings from the logs and lines them up with router requests, to show how memory grows and which requests run while it does.
+
+```sh
+bundle exec ruby tools/memory_pressure/script.rb --hours 24
+```
+
+Output includes:
+- Which hours of the window have logs (Papertrail plans with a daily cap drop the rest of the day)
+- R14 and other dyno error counts, router H-code counts, and dyno restarts
+- Per-dyno memory by hour (min, median, max)
+- The largest rises between samples and the requests running at the time
+- Memory rises split across the request paths that ran with them
+
+The split by path shows what ran during growth, not what caused it: busy paths collect a share of every rise.
+
 ## Adding new tools
 
 To add a new investigation tool:
